@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vivekananda College &middot; Grade Card Digitiser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="letterhead">
+<div class="seal" aria-hidden="true">
+  <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Vivekananda College logo">
+</div>
+  <div class="letterhead-text">
+    <p class="eyebrow">Vivekananda College &mdash; Office of the Controller of Examinations</p>
+    <h1>Grade Card Digitiser</h1>
+    <p class="tagline">Drop the scanned grade-card PDF in below. Every page is read and cross-checked automatically, and the results are filed away by semester and subject.</p>
+  </div>
+</div>
+
+<main>
+
+  <section id="upload-section" class="panel">
+    <form id="upload-form">
+      <div id="dropzone" class="dropzone">
+        <div class="dropzone-inner">
+          <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M24 6 L24 30 M24 6 L14 16 M24 6 L34 16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M8 30 L8 38 Q8 40 10 40 L38 40 Q40 40 40 38 L40 30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <p class="dropzone-label">Drag the grade-card PDF here</p>
+          <p class="dropzone-sub">or</p>
+          <label class="browse-btn">
+            Choose a file
+            <input type="file" id="file-input" accept="application/pdf" hidden>
+          </label>
+          <p id="file-chosen" class="file-chosen"></p>
+        </div>
+      </div>
+
+      <div class="options-row">
+        <label class="toggle">
+          <input type="checkbox" id="single-pass-toggle">
+          <span>Single-pass mode (faster, skips the cross-check re-read)</span>
+        </label>
+      </div>
+
+      <button type="submit" id="start-btn" class="primary-btn" disabled>Process grade cards</button>
+    </form>
+  </section>
+
+  <section id="progress-section" class="panel" hidden>
+    <div class="progress-header">
+      <h2 id="progress-title">Reading pages&hellip;</h2>
+      <span id="progress-percent">0%</span>
+    </div>
+    <div class="progress-bar-track"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
+    <pre id="log-console" class="log-console"></pre>
+  </section>
+
+  <section id="results-section" class="panel" hidden>
+    <h2>Finished</h2>
+    <p id="results-summary" class="results-summary"></p>
+    <ul id="results-list" class="results-list"></ul>
+    <div class="results-actions">
+      <button id="open-folder-btn" class="secondary-btn">Open output folder</button>
+      <button id="process-another-btn" class="secondary-btn">Process another PDF</button>
+    </div>
+    <p class="output-path">Saved under <code>{{ output_dir }}</code></p>
+  </section>
+
+  <section id="error-section" class="panel error-panel" hidden>
+    <h2>Something went wrong</h2>
+    <p id="error-message"></p>
+    <button id="error-retry-btn" class="secondary-btn">Try again</button>
+  </section>
+
+</main>
+
+<footer>
+  <p>Runs entirely on this device. Grade cards never leave your machine except for the page images sent to the OpenAI API for reading.</p>
+</footer>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

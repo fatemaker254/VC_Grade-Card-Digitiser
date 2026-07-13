@@ -1,0 +1,189 @@
+/* ---- tokens ---- */
+:root{
+  --maroon: #5C1220;
+  --maroon-dark: #3E0C15;
+  --gold: #C99A3B;
+  --gold-soft: #E4C77E;
+  --parchment: #F6F1E6;
+  --parchment-deep: #EDE4D0;
+  --ink: #241F1C;
+  --ink-soft: #5A5147;
+  --rule: #D8CBAA;
+  --success: #3F6B4F;
+  --review: #A23B3B;
+  --shadow: 0 12px 32px -16px rgba(60, 30, 10, 0.35);
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 500px at 50% -10%, rgba(201,154,59,0.10), transparent),
+    var(--parchment);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  min-height:100vh;
+}
+
+/* ---- letterhead ---- */
+.letterhead{
+  display:flex;
+  align-items:center;
+  gap: 28px;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 48px 24px 28px;
+}
+.seal{
+  width:84px; height:84px; flex-shrink:0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.seal img{
+  width:100%; height:100%;
+  object-fit: cover;
+  display: block;
+}
+
+.letterhead-text .eyebrow{
+  margin:0 0 6px;
+  font-size: 12.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--maroon);
+  font-weight:600;
+}
+.letterhead-text h1{
+  margin:0 0 8px;
+  font-family:"Fraunces", serif;
+  font-weight:700;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.letterhead-text .tagline{
+  margin:0; max-width: 54ch; color: var(--ink-soft); line-height:1.55; font-size:15px;
+}
+
+main{ max-width: 780px; margin: 0 auto; padding: 0 24px 64px; }
+
+.panel{
+  background: #FFFDF8;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+/* ---- dropzone: a "grade card" cutout ---- */
+.dropzone{
+  position: relative;
+  border: 2px dashed var(--gold);
+  border-radius: 10px;
+  padding: 48px 24px;
+  text-align:center;
+  background:
+    repeating-linear-gradient(135deg, rgba(92,18,32,0.025) 0 2px, transparent 2px 14px),
+    #FBF8F1;
+  transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+}
+.dropzone.drag-over{
+  border-color: var(--maroon);
+  background-color: #F3E9CE;
+  transform: scale(1.005);
+}
+.dropzone.has-file{ border-style: solid; border-color: var(--success); }
+
+.dropzone-icon{
+  width:40px; height:40px; margin-bottom:14px;
+  stroke: var(--maroon); stroke-width:2.4;
+}
+.dropzone-label{ margin:0 0 4px; font-weight:600; font-size:16px; }
+.dropzone-sub{ margin:6px 0; color: var(--ink-soft); font-size: 13px; }
+
+.browse-btn{
+  display:inline-block; margin-top:6px; padding: 9px 20px;
+  border: 1.5px solid var(--maroon); border-radius: 999px;
+  color: var(--maroon); font-weight:600; font-size:14px; cursor:pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+.browse-btn:hover{ background: var(--maroon); color: #fff; }
+
+.file-chosen{
+  margin: 14px 0 0; font-family:"IBM Plex Mono", monospace; font-size: 13px;
+  color: var(--maroon-dark); min-height: 18px;
+}
+
+.options-row{ margin: 20px 2px 4px; }
+.toggle{ display:flex; align-items:center; gap:9px; font-size:13.5px; color: var(--ink-soft); cursor:pointer; }
+.toggle input{ accent-color: var(--maroon); width:16px; height:16px; }
+
+.primary-btn{
+  width:100%; margin-top: 22px; padding: 14px;
+  background: var(--maroon); color:#fff; border:none; border-radius: 9px;
+  font-family:"IBM Plex Sans", sans-serif; font-weight:600; font-size: 15px;
+  cursor:pointer; transition: background-color .15s ease, transform .1s ease;
+  letter-spacing: 0.01em;
+}
+.primary-btn:hover:not(:disabled){ background: var(--maroon-dark); }
+.primary-btn:active:not(:disabled){ transform: scale(0.99); }
+.primary-btn:disabled{ background: #C9BEA9; cursor:not-allowed; }
+
+/* ---- progress ---- */
+.progress-header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+.progress-header h2{ font-family:"Fraunces", serif; font-size:20px; margin:0; }
+#progress-percent{ font-family:"IBM Plex Mono", monospace; color: var(--maroon); font-weight:500; }
+
+.progress-bar-track{
+  height: 8px; border-radius: 999px; background: var(--parchment-deep);
+  overflow:hidden; margin-bottom: 20px;
+}
+.progress-bar-fill{
+  height:100%; width:0%; border-radius:999px;
+  background: linear-gradient(90deg, var(--gold), var(--maroon));
+  transition: width .35s ease;
+}
+
+.log-console{
+  background: var(--ink); color: #E8DFC8;
+  border-radius: 10px; padding: 16px 18px;
+  font-family:"IBM Plex Mono", monospace; font-size: 12.5px; line-height:1.7;
+  max-height: 280px; overflow-y:auto; white-space: pre-wrap; margin:0;
+}
+
+/* ---- results ---- */
+#results-section h2{ font-family:"Fraunces", serif; margin: 0 0 6px; font-size:22px; }
+.results-summary{ color: var(--ink-soft); margin: 0 0 18px; }
+.results-list{ list-style:none; margin:0 0 22px; padding:0; display:flex; flex-direction:column; gap:8px; }
+.results-list li{
+  font-family:"IBM Plex Mono", monospace; font-size: 13px;
+  padding: 10px 14px; background: var(--parchment); border-radius: 8px;
+  border-left: 3px solid var(--gold);
+}
+.results-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+.output-path{ margin: 18px 0 0; font-size:12.5px; color: var(--ink-soft); }
+.output-path code{ background: var(--parchment); padding:2px 7px; border-radius:5px; }
+
+.secondary-btn{
+  padding: 11px 20px; border-radius: 9px; border: 1.5px solid var(--maroon);
+  background: #fff; color: var(--maroon); font-weight:600; font-size:14px; cursor:pointer;
+  transition: background-color .15s ease, color .15s ease;
+}
+.secondary-btn:hover{ background: var(--maroon); color:#fff; }
+
+.error-panel{ border-color: var(--review); }
+.error-panel h2{ font-family:"Fraunces", serif; color: var(--review); margin:0 0 8px; }
+#error-message{ font-family:"IBM Plex Mono", monospace; font-size:13px; color: var(--ink-soft); white-space:pre-wrap; }
+
+footer{ text-align:center; padding: 12px 24px 48px; color: var(--ink-soft); font-size:12.5px; }
+
+@media (max-width: 560px){
+  .letterhead{ flex-direction:column; text-align:center; padding-top:36px; }
+  .panel{ padding:22px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; }
+}
