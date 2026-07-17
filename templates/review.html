@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review flagged values &middot; Vivekananda College</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="review-body">
+
+<div class="review-header">
+  <h1>Review flagged values</h1>
+  <p id="review-counter" class="review-counter">Loading&hellip;</p>
+</div>
+
+<main class="review-main">
+  <div id="review-empty" class="panel" hidden>
+    <h2>Nothing left to review</h2>
+    <p>Every flagged field has been checked. You can finish and write the Excel files now.</p>
+    <button id="finish-btn" class="primary-btn">Finish &amp; write Excel files</button>
+  </div>
+
+  <div id="review-card" class="review-card" hidden>
+    <div class="review-image-pane">
+      <img id="review-image" alt="Scanned grade card page">
+    </div>
+    <div class="review-form-pane">
+      <p class="review-student"><span id="review-student-name"></span> &middot; <span id="review-reg-no"></span></p>
+      <p class="review-course"><span id="review-course-code"></span></p>
+
+      <h2 id="review-label"></h2>
+      <p id="review-reason" class="review-reason"></p>
+
+      <div class="review-suggestions" id="review-suggestions"></div>
+
+      <label class="review-input-label" for="review-input">Correct value</label>
+      <input type="text" id="review-input" class="review-input" autocomplete="off">
+
+      <div class="review-actions">
+        <button id="confirm-btn" class="primary-btn">Confirm &amp; next</button>
+      </div>
+      <p class="review-hint">Editing the box above and pressing Confirm saves your correction. Leaving it as-is just confirms the pipeline's value.</p>
+    </div>
+  </div>
+</main>
+
+<script src="{{ url_for('static', filename='review.js') }}" data-job-id="{{ job_id }}"></script>
+</body>
+</html>
