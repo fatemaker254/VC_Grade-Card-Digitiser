@@ -9,16 +9,13 @@ watch it process. Finished Excel files are written to OUTPUT_DIR on disk
 
 After extraction, anything the pipeline couldn't fully verify on its own -
 two-pass disagreements it couldn't auto-resolve, marks that exceed full
-marks, a Total that's present despite a missing/unreadable component behind
-it - goes to a review queue. The review screen shows the flagged field next
-to the actual scanned page, pre-filled with the pipeline's best guess, so a
-human only has to confirm or correct - not read the whole page and retype
+marks, an SGPA that doesn't match credit points / credits, a Credit Points
+value that doesn't match this college's own learned grade scale - goes to
+a review queue. The review screen shows the flagged field next to the
+actual scanned page, pre-filled with the pipeline's best guess, so a human
+only has to confirm or correct - not read the whole page and retype
 everything. Excel files are only written once every flagged item has been
 looked at.
-
-NOTE: there is no grade-scale or credit-sum cross-check here - real-batch
-testing showed credits and grade points are read reliably by GPT, so
-checking them was just noise. Only marks-related fields go to review.
 """
 import os
 import subprocess
@@ -44,6 +41,7 @@ from pdf_split import split_pdf_to_images
 from gpt_extract import extract_marksheet
 from reconcile import reconcile
 from validate import validate_student, normalize_fail_credit_points
+from grade_scale import learn_grade_scale, apply_grade_scale_check
 from config import load_subject_map, save_subject_map, semester_folder_name, subject_for_student
 from build_excel import write_subject_workbook
 
@@ -64,27 +62,8 @@ def _log(job_id, line):
     print(line)
 
 
-def _dedupe_items(items: list) -> list:
-    """Multiple checks (reconcile disagreement, components-sum mismatch,
-    bounds check, ...) can independently flag the SAME course+field. Merge
-    those into one queue entry instead of showing duplicates - fixing one
-    should clear it, not leave a lookalike behind."""
-    merged = {}
-    order = []
-    for it in items:
-        key = (it["course_code"], it["field"])
-        if key not in merged:
-            merged[key] = dict(it)
-            order.append(key)
-        else:
-            existing = merged[key]
-            if it["reason"] not in existing["reason"]:
-                existing["reason"] = existing["reason"] + "; " + it["reason"]
-            if not existing.get("pass1") and it.get("pass1"):
-                existing["pass1"] = it["pass1"]
-            if not existing.get("pass2") and it.get("pass2"):
-                existing["pass2"] = it["pass2"]
-    return [merged[k] for k in order]
+def _num_or_str(v):
+    return v
 
 
 def run_pipeline(job_id: str, pdf_path: Path, single_pass: bool, dpi: int, verify_dpi: int):
@@ -124,7 +103,12 @@ def run_pipeline(job_id: str, pdf_path: Path, single_pass: bool, dpi: int, verif
                 _log(job_id, f"[{i}/{len(image_paths)}] FAILED: {e}")
             job["percent"] = int(i / len(image_paths) * 80)
 
-        _log(job_id, "Cross-checking arithmetic ...")
+        _log(job_id, "Cross-checking arithmetic and this college's grade scale ...")
+        grade_scale = learn_grade_scale(records)
+        job["grade_scale"] = grade_scale
+        if grade_scale:
+            _log(job_id, "Learned grade scale: " +
+                 ", ".join(f"{g}={p:g}" for g, p in sorted(grade_scale.items())))
 
         review_items = []
         for idx, rec in enumerate(records):
@@ -132,7 +116,8 @@ def run_pipeline(job_id: str, pdf_path: Path, single_pass: bool, dpi: int, verif
             for n in fix_notes:
                 _log(job_id, f"  auto-corrected: {n}")
             v_notes, v_items = validate_student(rec)
-            all_items = _dedupe_items(list(rec.get("_recon_items", [])) + v_items)
+            g_notes, g_items = apply_grade_scale_check(rec, grade_scale)
+            all_items = list(rec.get("_recon_items", [])) + v_items + g_items
             for item in all_items:
                 review_items.append({
                     "id": uuid.uuid4().hex,
@@ -142,7 +127,6 @@ def run_pipeline(job_id: str, pdf_path: Path, single_pass: bool, dpi: int, verif
                     **item,
                     "resolved": False,
                 })
-
         job["percent"] = 90
         job["records"] = records
         job["review_items"] = review_items
@@ -190,7 +174,7 @@ def finalize_job(job_id: str):
 def _apply_correction(record: dict, field: str, new_value, course_code: str):
     """Writes a human-confirmed/corrected value back into the record at the
     right nested location, given the field key used by validate.py /
-    reconcile.py."""
+    reconcile.py / grade_scale.py."""
     if course_code == "Grand Total":
         record[field] = new_value
         return

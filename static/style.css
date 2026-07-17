@@ -35,17 +35,6 @@ body{
   margin: 0 auto;
   padding: 48px 24px 28px;
 }
-.seal{
-  width:84px; height:84px; flex-shrink:0;
-  border-radius: 50%;
-  overflow: hidden;
-}
-.seal img{
-  width:100%; height:100%;
-  object-fit: cover;
-  display: block;
-}
-
 .letterhead-text .eyebrow{
   margin:0 0 6px;
   font-size: 12.5px;
@@ -65,7 +54,16 @@ body{
 .letterhead-text .tagline{
   margin:0; max-width: 54ch; color: var(--ink-soft); line-height:1.55; font-size:15px;
 }
-
+.seal{
+  width:56px; height:56px; flex-shrink:0;
+  border-radius: 14px;   /* rounded corners, not a full circle */
+  overflow: hidden;
+}
+.seal img{
+  width:100%; height:100%;
+  object-fit: cover;
+  display: block;
+}
 main{ max-width: 780px; margin: 0 auto; padding: 0 24px 64px; }
 
 .panel{
@@ -186,4 +184,70 @@ footer{ text-align:center; padding: 12px 24px 48px; color: var(--ink-soft); font
 
 @media (prefers-reduced-motion: reduce){
   *{ transition:none !important; }
+}
+
+/* ---- needs-review banner on the main progress screen ---- */
+.review-banner{
+  margin-top: 18px; padding: 16px 18px; border-radius: 10px;
+  background: #FDF3E0; border: 1px solid var(--gold);
+  display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+}
+.review-banner p{ margin:0; font-size:14px; color: var(--ink); }
+.review-banner strong{ color: var(--maroon-dark); }
+
+/* ================= Review queue page ================= */
+.review-body{
+  background:
+    radial-gradient(1200px 500px at 50% -10%, rgba(201,154,59,0.10), transparent),
+    var(--parchment);
+  min-height:100vh; margin:0; font-family:"IBM Plex Sans", sans-serif; color: var(--ink);
+}
+.review-header{ max-width: 1100px; margin: 0 auto; padding: 36px 24px 8px; }
+.review-header h1{ font-family:"Fraunces", serif; font-size: 28px; margin:0 0 6px; }
+.review-counter{ margin:0; color: var(--ink-soft); font-family:"IBM Plex Mono", monospace; font-size:13.5px; }
+
+.review-main{ max-width: 1100px; margin: 0 auto; padding: 20px 24px 64px; }
+
+.review-card{
+  display:grid; grid-template-columns: 1.3fr 1fr; gap: 26px;
+  background:#FFFDF8; border:1px solid var(--rule); border-radius:14px;
+  box-shadow: var(--shadow); overflow:hidden;
+}
+.review-image-pane{
+  background: var(--ink); display:flex; align-items:flex-start; justify-content:center;
+  max-height: 78vh; overflow:auto; padding: 10px;
+}
+.review-image-pane img{ width:100%; height:auto; border-radius: 4px; }
+
+.review-form-pane{ padding: 30px 30px 30px 6px; }
+.review-student{ margin:0 0 2px; font-weight:600; font-size:14.5px; }
+.review-course{ margin:0 0 20px; font-family:"IBM Plex Mono", monospace; color: var(--maroon); font-size:13px; }
+
+.review-form-pane h2{ font-family:"Fraunces", serif; font-size:21px; margin:0 0 8px; }
+.review-reason{ color: var(--ink-soft); font-size: 13.5px; line-height:1.55; margin: 0 0 18px; }
+
+.review-suggestions{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 16px; }
+.suggestion-chip{
+  border: 1.5px solid var(--gold); background: #FBF3DE; color: var(--maroon-dark);
+  padding: 7px 13px; border-radius: 999px; font-family:"IBM Plex Mono", monospace;
+  font-size: 12.5px; cursor:pointer; transition: background-color .15s ease;
+}
+.suggestion-chip:hover{ background: var(--gold-soft); }
+
+.review-input-label{ display:block; font-size:12.5px; color: var(--ink-soft); margin-bottom:6px; }
+.review-input{
+  width:100%; padding: 12px 14px; font-size: 17px;
+  font-family:"IBM Plex Mono", monospace; border: 1.5px solid var(--rule); border-radius: 8px;
+  background:#fff; color: var(--ink);
+}
+.review-input:focus{ outline:none; border-color: var(--maroon); }
+
+.review-actions{ margin-top: 20px; }
+.review-actions .primary-btn{ width:auto; padding: 12px 26px; }
+.review-hint{ margin: 14px 0 0; font-size: 12px; color: var(--ink-soft); }
+
+@media (max-width: 760px){
+  .review-card{ grid-template-columns: 1fr; }
+  .review-image-pane{ max-height: 40vh; }
+  .review-form-pane{ padding: 24px; }
 }

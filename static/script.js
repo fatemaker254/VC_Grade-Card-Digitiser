@@ -21,6 +21,7 @@ const errorMessage = document.getElementById("error-message");
 
 let chosenFile = null;
 let pollTimer = null;
+let currentJobId = null;
 
 function setFile(file) {
   if (!file || file.type !== "application/pdf") {
@@ -79,6 +80,7 @@ form.addEventListener("submit", async e => {
   if (!res.ok) return showError(data.error || "Upload failed.");
 
   progressTitle.textContent = "Reading pages\u2026";
+  currentJobId = data.job_id;
   pollTimer = setInterval(() => pollStatus(data.job_id), 1200);
 });
 
@@ -100,10 +102,33 @@ async function pollStatus(jobId) {
   if (data.status === "done") {
     clearInterval(pollTimer);
     showResults(data);
+  } else if (data.status === "needs_review") {
+    clearInterval(pollTimer);
+    showNeedsReview(data);
   } else if (data.status === "error") {
     clearInterval(pollTimer);
     showError(data.error || "The pipeline hit an unexpected error.");
   }
+}
+
+function showNeedsReview(data) {
+  progressTitle.textContent = "Ready for review";
+  progressBarFill.style.width = "100%";
+  progressPercent.textContent = "100%";
+
+  let banner = document.getElementById("review-banner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "review-banner";
+    banner.className = "review-banner";
+    progressSection.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <p><strong>${data.pending_review}</strong> field(s) across ${data.total_pages} page(s) need a quick check
+    before the Excel files are written.</p>
+    <a href="/review/${currentJobId}" class="primary-btn" style="width:auto; text-decoration:none; display:inline-block;">
+      Review now
+    </a>`;
 }
 
 function showResults(data) {
@@ -132,9 +157,12 @@ document.getElementById("error-retry-btn").addEventListener("click", resetForm);
 
 function resetForm() {
   chosenFile = null;
+  currentJobId = null;
   fileInput.value = "";
   fileChosen.textContent = "";
   dropzone.classList.remove("has-file");
   startBtn.disabled = true;
+  const banner = document.getElementById("review-banner");
+  if (banner) banner.remove();
   showSection(uploadSection);
 }

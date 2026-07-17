@@ -76,7 +76,8 @@ def build_row(record: dict, schema: list) -> list:
         row += [_num(c.get("total_marks_obtained")), c.get("grade", ""),
                 _num(c.get("credit")), _num(c.get("credit_points")), c.get("status", "")]
 
-    review_notes = list(record.get("_review_notes", [])) + validate_student(record, schema)
+    validate_notes, _ = validate_student(record, schema)
+    review_notes = list(record.get("_review_notes", [])) + validate_notes
     row += [_num(record.get("grand_total_marks_obtained")),
             _num(record.get("grand_total_credit")),
             _num(record.get("grand_total_credit_points")),

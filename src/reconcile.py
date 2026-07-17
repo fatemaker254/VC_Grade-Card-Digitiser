@@ -91,10 +91,20 @@ def _resolve_full_marks(v1, v2):
 
 
 def reconcile(rec1: dict, rec2: dict) -> tuple:
-    """Returns (merged_record, list_of_notes). merged_record is rec1 with
-    disagreeing fields resolved (or left as pass-1 + flagged)."""
+    """Returns (merged_record, notes, items).
+    merged_record is rec1 with disagreeing fields resolved (or left as
+    pass-1 + flagged). notes are human-readable strings (Excel "Needs
+    Review" column). items are structured dicts driving the web review
+    queue: {course_code, field, label, current_value, pass1, pass2, reason}."""
     merged = copy.deepcopy(rec1)
     notes = []
+    items = []
+
+    def flag(code, field, label, current_value, pass1_val, pass2_val, reason):
+        notes.append(f"{code}: {reason}")
+        items.append({"course_code": code, "field": field, "label": label,
+                       "current_value": current_value,
+                       "pass1": pass1_val, "pass2": pass2_val, "reason": reason})
 
     courses2_by_code = {c.get("course_code"): c for c in rec2.get("courses", [])}
 
@@ -112,44 +122,65 @@ def reconcile(rec1: dict, rec2: dict) -> tuple:
 
         for idx, comp1 in enumerate(comps1):
             comp2 = comps2[idx] if idx < len(comps2) else {}
+            comp_name = comp1.get("name")
+
             if _norm(comp1.get("marks_obtained")) != _norm(comp2.get("marks_obtained")):
+                v1_before = comp1.get("marks_obtained")
                 resolved, ambiguous, note = _resolve_component_marks(
                     comps1, comps2, idx, ref_total1, ref_total2)
                 comp1["marks_obtained"] = resolved
-                if note:
-                    notes.append(f"{code} [{comp1.get('name')}]: {note}")
                 if ambiguous:
                     c1["low_confidence"] = True
+                    flag(code, f"component:{comp_name}:marks_obtained",
+                         f"{comp_name} marks obtained", resolved,
+                         v1_before, comp2.get("marks_obtained"), note)
+                elif note:
+                    notes.append(f"{code} [{comp_name}]: {note}")
 
             if _norm(comp1.get("full_marks")) != _norm(comp2.get("full_marks")):
+                v1_before = comp1.get("full_marks")
                 resolved, ambiguous, note = _resolve_full_marks(
                     comp1.get("full_marks"), comp2.get("full_marks"))
                 comp1["full_marks"] = resolved
-                if note:
-                    notes.append(f"{code} [{comp1.get('name')}]: {note}")
                 if ambiguous:
                     c1["low_confidence"] = True
+                    flag(code, f"component:{comp_name}:full_marks",
+                         f"{comp_name} full marks", resolved,
+                         v1_before, comp2.get("full_marks"), note)
+                elif note:
+                    notes.append(f"{code} [{comp_name}]: {note}")
 
         # Course-level total/credit/credit_points: agree -> trust; disagree -> flag
         # (there's no independent way to auto-pick between two course-level
-        # totals, so these always go to Needs Review rather than being guessed).
-        for field in ("total_full_marks", "total_marks_obtained", "credit", "credit_points"):
+        # totals, so these always go to the review queue rather than being guessed).
+        labels = {"total_full_marks": "Total full marks", "total_marks_obtained": "Total marks obtained",
+                  "credit": "Credit", "credit_points": "Credit Points"}
+        for field, label in labels.items():
             v1, v2 = c1.get(field), c2.get(field)
             if _norm(v1) != _norm(v2):
-                notes.append(f"{code}: {field} disagreement pass1={v1!r} pass2={v2!r}")
                 c1["low_confidence"] = True
+                flag(code, field, label, v1, v1, v2,
+                     f"{label} disagreement pass1={v1!r} pass2={v2!r}")
 
-        for field in ("grade", "status"):
+        for field, label in (("grade", "Grade"), ("status", "Status")):
             v1, v2 = (c1.get(field) or "").strip(), (c2.get(field) or "").strip()
-            if v1 != v2:
-                notes.append(f"{code}: {field} disagreement pass1={v1!r} pass2={v2!r}")
+            if v1.upper() != v2.upper():
                 c1["low_confidence"] = True
+                flag(code, field, label, v1, v1, v2,
+                     f"{label} disagreement pass1={v1!r} pass2={v2!r}")
+            elif v1:
+                c1[field] = v1.upper()  # canonical form, e.g. "f(th)" -> "F(TH)"
 
-    for field in ("grand_total_full_marks", "grand_total_marks_obtained",
-                  "grand_total_credit", "grand_total_credit_points", "sgpa"):
+    grand_labels = {"grand_total_full_marks": "Grand Total full marks",
+                    "grand_total_marks_obtained": "Grand Total marks obtained",
+                    "grand_total_credit": "Grand Total credit",
+                    "grand_total_credit_points": "Grand Total credit points",
+                    "sgpa": "SGPA"}
+    for field, label in grand_labels.items():
         v1, v2 = rec1.get(field), rec2.get(field)
         if _norm(v1) != _norm(v2):
-            notes.append(f"{field} disagreement: pass1={v1!r} pass2={v2!r}")
             merged["low_confidence"] = True
+            flag("Grand Total", field, label, v1, v1, v2,
+                 f"{label} disagreement: pass1={v1!r} pass2={v2!r}")
 
-    return merged, notes
+    return merged, notes, items
